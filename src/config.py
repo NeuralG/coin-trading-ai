@@ -1,0 +1,38 @@
+TICKERS = [
+    "AKBNK.IS",
+    "ALARK.IS",
+    "ARCLK.IS",
+    "ASELS.IS",
+    "ASTOR.IS",
+    "BIMAS.IS",
+    "BRSAN.IS",
+    "CIMSA.IS",
+    "DOAS.IS",
+    "EKGYO.IS",
+    "ENKAI.IS",
+    "EREGL.IS",
+    "FROTO.IS",
+    "GARAN.IS",
+    "GUBRF.IS",
+    "HEKTS.IS",
+    "ISCTR.IS",
+    "KCHOL.IS",
+    "KONTR.IS",
+    "KOZAL.IS",
+    "KRDMD.IS",
+    "ODAS.IS",
+    "PETKM.IS",
+    "PGSUS.IS",
+    "SAHOL.IS",
+    "SASA.IS",
+    "SISE.IS",
+    "TCELL.IS",
+    "THYAO.IS",
+    "TOASO.IS",
+    "TUPRS.IS",
+    "YKBNK.IS",
+]
+
+DATA_FILE_PATH = "data/bist30_daily_history.parquet"
+
+HISTORY_YEARS = 3
