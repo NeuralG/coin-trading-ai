@@ -21,36 +21,45 @@ def fetch_new_data():
     start_date = None
     prev_df = pd.DataFrame()
 
+    max_history_start = datetime.now() - timedelta(days=729)
+
     if os.path.exists(data_path):
 
         try:
             prev_df = pd.read_parquet(data_path)
+            prev_df["Date"] = pd.to_datetime(prev_df["Date"]).dt.tz_localize(None)
+
             last_data_date = prev_df["Date"].max()
 
             # start from one day after last data
-            start_date = last_data_date + timedelta(days=1)
+            start_date = last_data_date + timedelta(hours=1)
 
         except Exception as e:
             print(f"Error while reading file: {e}")
 
     if start_date is None:
         print("No files were found.")
-        start_date = datetime.now() - timedelta(days=365 * config.HISTORY_YEARS)
+        start_date = max_history_start
+
+    start_date = max(start_date, max_history_start)
 
     end_date = datetime.now()
 
-    if start_date.date() >= end_date.date():
-        print("Data is already updated")
+    if start_date >= end_date - timedelta(minutes=59):
+        print("Data is already updated (Less than 1 hour passed)")
         return
+
+    print(f"Downloading from {start_date} to {end_date}...")
 
     # === download the data ===
 
     try:
         new_data = yf.download(
             tickers,
+            interval="1h",
             start=start_date,
             end=end_date,
-            progress=False,
+            progress=True,
             group_by="ticker",
             auto_adjust=True,
         )
@@ -61,16 +70,24 @@ def fetch_new_data():
 
     # === reshaping ===
 
-    stacked = new_data.stack(level=0, future_stack=True)
+    stacked = new_data.stack(level=0)
     stacked.reset_index(inplace=True)
 
-    rename_dict = {"level_1": "Symbol", "Ticker": "Symbol"}
-    stacked = stacked.rename(columns=rename_dict)
+    cols = list(stacked.columns)
 
-    stacked["Date"] = pd.to_datetime(stacked["Date"])
+    cols[0] = "Date"
+
+    if "Symbol" not in stacked.columns:
+        cols[1] = "Symbol"
+
+    stacked.columns = cols
+
+    stacked["Date"] = pd.to_datetime(stacked["Date"]).dt.tz_localize(None)
 
     # clean metadata
     stacked.columns.name = None
+
+    stacked.dropna(subset=["Close"], inplace=True)
 
     # === merge and save ===
 
@@ -79,6 +96,8 @@ def fetch_new_data():
         final_df = pd.concat([prev_df, stacked])
     else:
         final_df = stacked
+
+    final_df.sort_values(["Symbol", "Date"], inplace=True)
 
     final_df.to_parquet(data_path, index=False)
 
