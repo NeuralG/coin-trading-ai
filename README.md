@@ -1,3 +1,3 @@
-# bist-trading-ai
+# coin-trading-ai
 
-A bist ai for trading stocks in bist, not finished.
+A btc based ai for trading, not finished.
