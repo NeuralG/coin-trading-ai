@@ -161,11 +161,15 @@ def add_features(df):
                 group[f"{col}_lag2"] = group[col].shift(2)
         return group
 
-    df = df.groupby("Symbol", group_keys=False).apply(compute_indicators)
-    df = df.groupby("Symbol", group_keys=False).apply(rename_columns)
-    df = df.groupby("Symbol", group_keys=False).apply(custom_features)
-    df = df.groupby("Symbol", group_keys=False).apply(add_time_features)
-    df = df.groupby("Symbol", group_keys=False).apply(add_lags)
+    def process_all_features(group):
+        group = compute_indicators(group)
+        group = rename_columns(group)
+        group = custom_features(group)
+        group = add_time_features(group)
+        group = add_lags(group)
+        return group
+
+    df = df.groupby("Symbol", group_keys=False).apply(process_all_features)
 
     df.dropna(inplace=True)
 

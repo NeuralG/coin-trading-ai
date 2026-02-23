@@ -2,16 +2,15 @@ import os
 import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
-import config
+import src.config as config
+from pathlib import Path
 
 
 def fetch_new_data():
-    # === setup the paths ===
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
-    data_path = os.path.join(project_root, config.DATA_FILE_PATH)
-    os.makedirs(os.path.dirname(data_path), exist_ok=True)
 
+    # === setup the paths ===
+    data_path = Path(config.DATA_FILE_PATH)
+    os.makedirs(data_path.parent, exist_ok=True)
     # === determine the data range ===
     start_date = None
     prev_df = pd.DataFrame()

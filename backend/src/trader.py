@@ -2,11 +2,11 @@ import joblib
 import pandas as pd
 import yfinance as yf
 from fastapi import FastAPI
-from fetch_data import fetch_new_data
+from src.fetch_data import fetch_new_data
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
-from config import DATA_FILE_PATH, TICKER
-from features import add_features
+from src.config import DATA_FILE_PATH, TICKER
+from src.features import add_features
 
 ml_package = {}
 df = pd.DataFrame()
@@ -24,7 +24,9 @@ def fetch_data_hourly():
     fetch_new_data()
 
     try:
-        df = pd.read_parquet(f"../{DATA_FILE_PATH}")
+        df = pd.read_parquet(DATA_FILE_PATH)
+        if "Symbol" not in df.columns:
+            df["Symbol"] = TICKER
         df = add_features(df)
     except Exception as e:
         print("Error while reading file")
@@ -61,7 +63,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(fetch_live, "interval", minutes=1)
     scheduler.start()
     # get the model
-    ml_package = get_ml_model("../models/main-model.pkl")
+    ml_package = get_ml_model("models/main-model.pkl")
     yield
     scheduler.shutdown()
 
